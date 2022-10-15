@@ -4,7 +4,7 @@
 ;	de varias formas con subrutinas						Fecha: 07-10-2022
 ;	- Dispositivo: PIC16F628A
 ;	- Perro guardian: OFF
-;	- Reloj: interno
+;	- Tipo de Reloj: interno
 ;	- Proteccion del codigo: OFF
 ;*******************************************************************************
 
@@ -13,20 +13,29 @@
 ; Zona de dat	os
 ;*******************************************************************************
 
-		__CONFIG 3F01
+		__CONFIG 3F10
 		LIST 	P=16F628A
 		#INCLUDE <P16F628A.INC>
 		ERRORLEVEL -302
-		ORG 	0x00
-	
 	
 ;*******************************************************************************
 ; Constantes
 ;*******************************************************************************
 
-CONT 	EQU 0x20
-CONT2 	EQU 0x21
-CONT3 	EQU 0x22
+		CBLOCK 0x20	; Reservamos una serie de direcciones de memoria para los alias
+		
+		CONTADOR1
+		CONTADOR2
+		CONTADOR3
+		CONTADOR4
+		
+		ENDC
+
+		ORG 	0x00
+		
+		CALL CONFIGURAR_PUERTOS
+		GOTO INICIO
+		
 
 
 ;*******************************************************************************
@@ -35,49 +44,97 @@ CONT3 	EQU 0x22
 ; Subrutina principal
 ;********************
 
-INICIO	CALL BUCLE_LEDS_500MS
+INICIO	CALL ENCENDER_TODOS_LOS_LEDS
+		CALL ENCENDER_TODOS_LOS_LEDS
+
+		CALL DELAY_5S
+		
+		CALL ENCENDER_TODOS_LOS_LEDS_1S
+		CALL ENCENDER_TODOS_LOS_LEDS_1S
+		
+		CALL DELAY_5S
+		
+		CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+		CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+		
+		CALL DELAY_5S
+		
+		CALL ENCENDER_LEDS_DE_A_UNO_500MS
+		CALL ENCENDER_LEDS_DE_A_UNO_500MS
+		
+		CALL DELAY_5S
+		
+		CALL BUCLE_LEDS_500MS
+		CALL BUCLE_LEDS_500MS
+		
+		CALL DELAY_5S
+				
 		GOTO INICIO
 
 
-;****************************************************
+;**************************************************************************
+; Subrutinas de retardo
+;**************************************************************************
 ; Subrutina para generar retardo de 1ms
-;****************************************************
+;**************************************************************************
 
+DELAY_1MS	MOVLW D'250'			; Cargamos el valor 250 en W
+			MOVWF CONTADOR1		; Cargamos el valor de W en el primer contador
 
-DELAY_1MS	MOVLW D'250'
-			MOVWF CONT
-
-LOOP1	NOP
-		DECFSZ CONT,F
-		GOTO LOOP1
-		RETURN
+RETARDO_1	NOP
+			DECFSZ CONTADOR1,F	; Decrementamos en 1 el primer contador
+			GOTO RETARDO_1		; Repetimos la accion hasta que sea 0
+			RETURN
 
 
 ;****************************************************
 ; Subrutina para generar retardo de 250ms
 ;****************************************************
 
-DELAY_250MS	MOVLW D'250'		; Cargamos 250 en CONT2
-			MOVWF CONT2
+DELAY_250MS	MOVLW D'250'			; Cargamos el valor 250 en W
+			MOVWF CONTADOR2		; Cargamos el valor de W en el segundo contador
 
-LOOP2	CALL DELAY_1MS		; Repetimos 250 veces 1ms
-		DECFSZ CONT2,F
-		GOTO LOOP2	
-		RETURN
+RETARDO_2	CALL DELAY_1MS		; Esperamos 1 milisegundo por cada
+			DECFSZ CONTADOR2,F	; decremento del segundo contador (1ms x 250 = 250ms)
+			GOTO RETARDO_2		; Repetimos la accion hasta que sea 0
+			RETURN
 
 
 ;****************************************************
 ; Subrutina para generar retardo de 1s
 ;****************************************************
 
-DELAY_1S	MOVLW D'4'			; Cargamos 4 en CONT3
-		MOVWF CONT3
+DELAY_1S		MOVLW D'4'			; Cargamos el valor 4 en W
+			MOVWF CONTADOR3		; Cargamos el valor de W en el tercer contador
 
-LOOP3	CALL DELAY_250MS		; Repetimos 4 veces el 250ms
-		DECFSZ CONT3,F
-		GOTO LOOP3	
-		RETURN
+RETARDO_3	CALL DELAY_250MS		; Esperamos 250 milisegundos por cada
+			DECFSZ CONTADOR3,F	; decremento del tercer contador (250ms x 4 = 1000ms)
+			GOTO RETARDO_3		; Repetimos la accion hasta que sea 0
+			RETURN
+			
+DELAY_5S
+			MOVLW D'5'			; Cargamos el valor de 5 en W
+			MOVWF CONTADOR4		; Cargamos el valor de W en el cuarto contador
 
+RETARDO_4
+			CALL DELAY_1S		; Esperamos 1 segundo por cada
+			DECFSZ CONTADOR4,F	; decremento del cuarto contador (1s x 5 = 5s)
+			GOTO RETARDO_4		; Repetimos la accion hasta que sea 0
+			RETURN
+			
+;****************************************************
+; Subrutina para configurar los pines de salida
+;****************************************************			
+
+CONFIGURAR_PUERTOS	
+			BSF	STATUS,RP0
+			MOVLW B'11110000'		; Seteamos RB0, RB1, RB2 como salida				
+			MOVWF TRISB
+			BCF STATUS,RP0
+			MOVLW B'00000000'		; Inicialmente, los LEDs estan inhabilitados
+			MOVWF PORTB
+			RETURN
+		
 
 ;****************************************************
 ; Subrutina para encender todos los LEDs
@@ -86,24 +143,19 @@ LOOP3	CALL DELAY_250MS		; Repetimos 4 veces el 250ms
 ENCENDER_TODOS_LOS_LEDS
 		
 		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
-	
-		BCF TRISB,0			; Seteamos los pines: RB0,RB1,RB2,RB3 como salidas
-		BCF TRISB,1
-		BCF TRISB,2
-		BCF TRISB,3
+		
+		MOVLW B'11110000'
+		MOVWF TRISB
 		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
-		BSF PORTB,0
-		BSF PORTB,1
-		BSF PORTB,2
-		BSF PORTB,3
 		
-		CALL DELAY_1MS		; Esperamos 1ms
+		MOVLW B'00001111'		; Habilitamos los pines
+		MOVWF PORTB
 		
-		BCF PORTB,0			; Deshabilitamos los 4 pines, es decir, apagamos los LED's
-		BCF PORTB,1
-		BCF PORTB,2
-		BCF PORTB,3
+		CALL DELAY_250MS		; Esperamos 1ms
+		
+		MOVLW B'00000000'		; Deshabilitamos todos los pines
+		MOVWF PORTB
 		
 		CALL DELAY_1MS		; Esperamos 1 ms (es para que se vea bien en Proteus)
 		
@@ -118,24 +170,18 @@ ENCENDER_TODOS_LOS_LEDS_1S
 
 		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
 		
-		BCF TRISB,0			; Seteamos los pines: RB0,RB1,RB2,RB3 como salidas
-		BCF TRISB,1
-		BCF TRISB,2
-		BCF TRISB,3
+		MOVLW B'11110000'
+		MOVWF TRISB
 		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
-		BSF PORTB,0			; Habilitamos los 4 pines para que se enciendan los LED's
-		BSF PORTB,1
-		BSF PORTB,2
-		BSF PORTB,3
+		MOVLW B'00001111'		; Habilitamos los pines
+		MOVWF PORTB
 	
 		CALL DELAY_1S		; Esperamos 1 segundo
 	
-		BCF PORTB,0			; Deshabilitamos los 4 pines, es decir, apagamos los LED's
-		BCF PORTB,1
-		BCF PORTB,2
-		BCF PORTB,3
+		MOVLW B'00000000'		; Deshabilitamos todos los pines
+		MOVWF PORTB
 	
 		CALL DELAY_1S		; Esperamos 1 segundo (es para que se vea bien en Proteus)
 		
@@ -149,24 +195,18 @@ ENCENDER_TODOS_LOS_LEDS_1S_500MS
 
 		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
 		
-		BCF TRISB,0			; Seteamos los pines: RB0,RB1,RB2,RB3 como salidas
-		BCF TRISB,1
-		BCF TRISB,2
-		BCF TRISB,3
+		MOVLW B'11110000'
+		MOVWF TRISB
 		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
-		BSF PORTB,0			; Habilitamos los 4 pines para que se enciendan los LED's
-		BSF PORTB,1
-		BSF PORTB,2
-		BSF PORTB,3
+		MOVLW B'00001111'		; Habilitamos los pines
+		MOVWF PORTB
 	
 		CALL DELAY_1S		; Esperamos 1 segundo
 	
-		BCF PORTB,0			; Deshabilitamos los 4 pines, es decir, apagamos los LED's
-		BCF PORTB,1
-		BCF PORTB,2
-		BCF PORTB,3
+		MOVLW B'00000000'		; Deshabilitamos todos los pines
+		MOVWF PORTB
 	
 		CALL DELAY_250MS		; Esperamos 500ms
 		CALL DELAY_250MS
@@ -182,10 +222,8 @@ ENCENDER_LEDS_DE_A_UNO_500MS
 
 		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
 		
-		BCF TRISB,0			; Seteamos los pines: RB0,RB1,RB2,RB3 como salidas
-		BCF TRISB,1
-		BCF TRISB,2
-		BCF TRISB,3
+		MOVLW B'11110000'
+		MOVWF TRISB
 		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
@@ -205,10 +243,9 @@ ENCENDER_LEDS_DE_A_UNO_500MS
 		CALL DELAY_250MS
 		CALL DELAY_250MS
 		
-		BCF PORTB,0			; Deshabilitamos todos los pines en manera conjunta
-		BCF PORTB,1
-		BCF PORTB,2
-		BCF PORTB,3
+		MOVLW B'00000000'		; Deshabilitamos todos los pines
+		MOVWF PORTB
+		
 		CALL DELAY_250MS		; Esperamos 500ms para visualizarlo en Proteus
 		CALL DELAY_250MS
 	
@@ -224,10 +261,8 @@ BUCLE_LEDS_500MS
 
 		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
 		
-		BCF TRISB,0			; Seteamos los pines: RB0,RB1,RB2,RB3 como salidas
-		BCF TRISB,1
-		BCF TRISB,2
-		BCF TRISB,3
+		MOVLW B'11110000'
+		MOVWF TRISB
 		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
