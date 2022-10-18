@@ -1,0 +1,557 @@
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 
+                      00002 ;*******************************************************************************
+                      00003 ;       Programa para encender LEDs
+                      00004 ;       de varias formas con subrutinas                                         Fecha: 07-10-2022
+                      00005 ;       - Dispositivo: PIC16F628A
+                      00006 ;       - Perro guardian: OFF
+                      00007 ;       - Tipo de Reloj: interno
+                      00008 ;       - Proteccion del codigo: OFF
+                      00009 ;*******************************************************************************
+                      00010 
+                      00011 
+                      00012 ;*******************************************************************************
+                      00013 ; Zona de dat   os
+                      00014 ;*******************************************************************************
+                      00015 
+2007   3F10           00016                 __CONFIG 3F10
+                      00017                 LIST    P=16F628A
+                      00018                 #INCLUDE <P16F628A.INC>
+                      00001         LIST
+                      00002 ; P16F628A.INC  Standard Header File, Version 1.10    Microchip Technology, Inc.
+                      00265         LIST
+                      00266 
+                      00019                 ERRORLEVEL -302
+                      00020         
+                      00021 ;*******************************************************************************
+                      00022 ; Constantes
+                      00023 ;*******************************************************************************
+                      00024 
+                      00025                 CBLOCK 0X20     ; Reservamos una serie de direcciones de memoria para los alias
+                      00026                 
+  00000020            00027                 CONTADOR1
+  00000021            00028                 CONTADOR2
+  00000022            00029                 CONTADOR3
+  00000023            00030                 CONTADOR4
+                      00031                 
+                      00032                 ENDC
+                      00033 
+                      00034                 ORG     0X00
+                      00035                 
+0000   2???           00036                 CALL CONFIGURAR_PUERTOS
+0001   2???           00037                 GOTO INICIO
+                      00038                 
+                      00039 
+                      00040 
+                      00041 ;*******************************************************************************
+                      00042 ; Zona de codigos
+                      00043 ;*******************************************************************************
+                      00044 ; Subrutina principal
+                      00045 ;********************
+                      00046 
+0002   2???           00047 INICIO  CALL ENCENDER_TODOS_LOS_LEDS
+0003   2???           00048                 CALL ENCENDER_TODOS_LOS_LEDS
+                      00049 
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0004   2???           00050                 CALL DELAY_5S
+                      00051                 
+0005   2???           00052                 CALL ENCENDER_TODOS_LOS_LEDS_1S
+0006   2???           00053                 CALL ENCENDER_TODOS_LOS_LEDS_1S
+                      00054                 
+0007   2???           00055                 CALL DELAY_5S
+                      00056                 
+0008   2???           00057                 CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+0009   2???           00058                 CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+                      00059                 
+000A   2???           00060                 CALL DELAY_5S
+                      00061                 
+000B   2???           00062                 CALL ENCENDER_LEDS_DE_A_UNO_500MS
+000C   2???           00063                 CALL ENCENDER_LEDS_DE_A_UNO_500MS
+                      00064                 
+000D   2???           00065                 CALL DELAY_5S
+                      00066                 
+000E   2???           00067                 CALL BUCLE_LEDS_500MS
+000F   2???           00068                 CALL BUCLE_LEDS_500MS
+                      00069                 
+0010   2???           00070                 CALL DELAY_5S
+                      00071                                 
+0011   2???           00072                 GOTO INICIO
+                      00073 
+                      00074 
+                      00075 ;**************************************************************************
+                      00076 ; Subrutinas de retardo
+                      00077 ;**************************************************************************
+                      00078 ; Subrutina para generar retardo de 1ms
+                      00079 ;**************************************************************************
+                      00080 
+0012   30FA           00081 DELAY_1MS       MOVLW D'250'                    ; Cargamos el valor 250 en W
+0013   00A0           00082                         MOVWF CONTADOR1         ; Cargamos el valor de W en el primer contador
+                      00083 
+0014   0000           00084 RETARDO_1       NOP
+0015   0BA0           00085                         DECFSZ CONTADOR1,F      ; Decrementamos en 1 el primer contador
+0016   2???           00086                         GOTO RETARDO_1          ; Repetimos la accion hasta que sea 0
+0017   0008           00087                         RETURN
+                      00088 
+                      00089 
+                      00090 ;****************************************************
+                      00091 ; Subrutina para generar retardo de 250ms
+                      00092 ;****************************************************
+                      00093 
+0018   30FA           00094 DELAY_250MS     MOVLW D'250'                    ; Cargamos el valor 250 en W
+0019   00A1           00095                         MOVWF CONTADOR2         ; Cargamos el valor de W en el segundo contador
+                      00096 
+001A   2???           00097 RETARDO_2       CALL DELAY_1MS          ; Esperamos 1 milisegundo por cada
+001B   0BA1           00098                         DECFSZ CONTADOR2,F      ; decremento del segundo contador (1ms x 250 = 250ms)
+001C   2???           00099                         GOTO RETARDO_2          ; Repetimos la accion hasta que sea 0
+001D   0008           00100                         RETURN
+                      00101 
+                      00102 
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00103 ;****************************************************
+                      00104 ; Subrutina para generar retardo de 1s
+                      00105 ;****************************************************
+                      00106 
+001E   3004           00107 DELAY_1S                MOVLW D'4'                      ; Cargamos el valor 4 en W
+001F   00A2           00108                         MOVWF CONTADOR3         ; Cargamos el valor de W en el tercer contador
+                      00109 
+0020   2???           00110 RETARDO_3       CALL DELAY_250MS                ; Esperamos 250 milisegundos por cada
+0021   0BA2           00111                         DECFSZ CONTADOR3,F      ; decremento del tercer contador (250ms x 4 = 1000ms)
+0022   2???           00112                         GOTO RETARDO_3          ; Repetimos la accion hasta que sea 0
+0023   0008           00113                         RETURN
+                      00114                         
+0024                  00115 DELAY_5S
+0024   3005           00116                         MOVLW D'5'                      ; Cargamos el valor de 5 en W
+0025   00A3           00117                         MOVWF CONTADOR4         ; Cargamos el valor de W en el cuarto contador
+                      00118 
+0026                  00119 RETARDO_4
+0026   2???           00120                         CALL DELAY_1S           ; Esperamos 1 segundo por cada
+0027   0BA3           00121                         DECFSZ CONTADOR4,F      ; decremento del cuarto contador (1s x 5 = 5s)
+0028   2???           00122                         GOTO RETARDO_4          ; Repetimos la accion hasta que sea 0
+0029   0008           00123                         RETURN
+                      00124                         
+                      00125 ;****************************************************
+                      00126 ; Subrutina para configurar los pines de salida
+                      00127 ;****************************************************                   
+                      00128 
+002A                  00129 CONFIGURAR_PUERTOS      
+002A   1683           00130                         BSF     STATUS,RP0
+002B   30F0           00131                         MOVLW B'11110000'               ; Seteamos RB0, RB1, RB2 como salida            
+                                            
+002C   0086           00132                         MOVWF TRISB
+002D   1283           00133                         BCF STATUS,RP0
+002E   3000           00134                         MOVLW B'00000000'               ; Inicialmente, los LEDs estan inhabilitados
+002F   0086           00135                         MOVWF PORTB
+0030   0008           00136                         RETURN
+                      00137                 
+                      00138 
+                      00139 ;****************************************************
+                      00140 ; Subrutina para encender todos los LEDs
+                      00141 ;****************************************************
+                      00142 
+0031                  00143 ENCENDER_TODOS_LOS_LEDS
+                      00144                 
+0031   1683           00145                 BSF STATUS,RP0          ; Cambiamos al banco 1 para manejar TRISB
+                      00146                 
+0032   30F0           00147                 MOVLW B'11110000'
+0033   0086           00148                 MOVWF TRISB
+                      00149                 
+0034   1283           00150                 BCF STATUS,RP0          ; Volvemos al banco 0 para manejar PORTB
+                      00151                 
+0035   300F           00152                 MOVLW B'00001111'               ; Habilitamos los pines
+0036   0086           00153                 MOVWF PORTB
+                      00154                 
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0037   2???           00155                 CALL DELAY_250MS                ; Esperamos 1ms
+                      00156                 
+0038   3000           00157                 MOVLW B'00000000'               ; Deshabilitamos todos los pines
+0039   0086           00158                 MOVWF PORTB
+                      00159                 
+003A   2???           00160                 CALL DELAY_1MS          ; Esperamos 1 ms (es para que se vea bien en Proteus)
+                      00161                 
+003B   0008           00162                 RETURN
+                      00163         
+                      00164         
+                      00165 ;**********************************************************************
+                      00166 ; Subrutina para encender todos los LEDs con 1 segundo de intermitencia
+                      00167 ;**********************************************************************
+                      00168 
+003C                  00169 ENCENDER_TODOS_LOS_LEDS_1S
+                      00170 
+003C   1683           00171                 BSF STATUS,RP0          ; Cambiamos al banco 1 para manejar TRISB
+                      00172                 
+003D   30F0           00173                 MOVLW B'11110000'
+003E   0086           00174                 MOVWF TRISB
+                      00175                 
+003F   1283           00176                 BCF STATUS,RP0          ; Volvemos al banco 0 para manejar PORTB
+                      00177                 
+0040   300F           00178                 MOVLW B'00001111'               ; Habilitamos los pines
+0041   0086           00179                 MOVWF PORTB
+                      00180         
+0042   2???           00181                 CALL DELAY_1S           ; Esperamos 1 segundo
+                      00182         
+0043   3000           00183                 MOVLW B'00000000'               ; Deshabilitamos todos los pines
+0044   0086           00184                 MOVWF PORTB
+                      00185         
+0045   2???           00186                 CALL DELAY_1S           ; Esperamos 1 segundo (es para que se vea bien en Proteus)
+                      00187                 
+0046   0008           00188                 RETURN
+                      00189 
+                      00190 ;******************************************************************************
+                      00191 ; Subrutina para encender todos los LEDs con 1 segundo y 500ms de intermitencia
+                      00192 ;******************************************************************************
+                      00193 
+0047                  00194 ENCENDER_TODOS_LOS_LEDS_1S_500MS 
+                      00195 
+0047   1683           00196                 BSF STATUS,RP0          ; Cambiamos al banco 1 para manejar TRISB
+                      00197                 
+0048   30F0           00198                 MOVLW B'11110000'
+0049   0086           00199                 MOVWF TRISB
+                      00200                 
+004A   1283           00201                 BCF STATUS,RP0          ; Volvemos al banco 0 para manejar PORTB
+                      00202                 
+004B   300F           00203                 MOVLW B'00001111'               ; Habilitamos los pines
+004C   0086           00204                 MOVWF PORTB
+                      00205         
+004D   2???           00206                 CALL DELAY_1S           ; Esperamos 1 segundo
+                      00207         
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+004E   3000           00208                 MOVLW B'00000000'               ; Deshabilitamos todos los pines
+004F   0086           00209                 MOVWF PORTB
+                      00210         
+0050   2???           00211                 CALL DELAY_250MS                ; Esperamos 500ms
+0051   2???           00212                 CALL DELAY_250MS
+                      00213                 
+0052   0008           00214                 RETURN
+                      00215                 
+                      00216 
+                      00217 ;************************************************************************
+                      00218 ; Subrutina para encender todos los leds linealmente con 500ms de retardo
+                      00219 ;************************************************************************
+                      00220                 
+0053                  00221 ENCENDER_LEDS_DE_A_UNO_500MS
+                      00222 
+0053   1683           00223                 BSF STATUS,RP0          ; Cambiamos al banco 1 para manejar TRISB
+                      00224                 
+0054   30F0           00225                 MOVLW B'11110000'
+0055   0086           00226                 MOVWF TRISB
+                      00227                 
+0056   1283           00228                 BCF STATUS,RP0          ; Volvemos al banco 0 para manejar PORTB
+                      00229                 
+0057   1406           00230                 BSF PORTB,0                     ; Habilitamos el pin RB0 y esperamos 500ms
+0058   2???           00231                 CALL DELAY_250MS
+0059   2???           00232                 CALL DELAY_250MS
+                      00233                 
+005A   1486           00234                 BSF PORTB,1                     ; Habilitamos el pin RB1 y esperamos 500ms
+005B   2???           00235                 CALL DELAY_250MS
+005C   2???           00236                 CALL DELAY_250MS
+                      00237                 
+005D   1506           00238                 BSF PORTB,2                     ; Habilitamos el pin RB2 y esperamos 500ms
+005E   2???           00239                 CALL DELAY_250MS
+005F   2???           00240                 CALL DELAY_250MS
+                      00241                 
+0060   1586           00242                 BSF PORTB,3                     ; Habilitamos el pin RB3 y esperamos 500ms
+0061   2???           00243                 CALL DELAY_250MS
+0062   2???           00244                 CALL DELAY_250MS
+                      00245                 
+0063   3000           00246                 MOVLW B'00000000'               ; Deshabilitamos todos los pines
+0064   0086           00247                 MOVWF PORTB
+                      00248                 
+0065   2???           00249                 CALL DELAY_250MS                ; Esperamos 500ms para visualizarlo en Proteus
+0066   2???           00250                 CALL DELAY_250MS
+                      00251         
+0067   0008           00252                 RETURN
+                      00253 
+                      00254 
+                      00255 ;************************************************************
+                      00256 ; Subrutina para encender todos los LEDs con 500ms de retardo 
+                      00257 ; y apagarlos descendentemente con 500ms de retardo
+                      00258 ;************************************************************
+                      00259 
+0068                  00260 BUCLE_LEDS_500MS
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00261 
+0068   1683           00262                 BSF STATUS,RP0          ; Cambiamos al banco 1 para manejar TRISB
+                      00263                 
+0069   30F0           00264                 MOVLW B'11110000'
+006A   0086           00265                 MOVWF TRISB
+                      00266                 
+006B   1283           00267                 BCF STATUS,RP0          ; Volvemos al banco 0 para manejar PORTB
+                      00268                 
+006C   1406           00269                 BSF PORTB,0                     ; Habilitamos el pin RB0 y esperamos 500ms
+006D   2???           00270                 CALL DELAY_250MS
+006E   2???           00271                 CALL DELAY_250MS
+                      00272                 
+006F   1486           00273                 BSF PORTB,1                     ; Habilitamos el pin RB1 y esperamos 500ms
+0070   2???           00274                 CALL DELAY_250MS
+0071   2???           00275                 CALL DELAY_250MS
+                      00276                 
+0072   1506           00277                 BSF PORTB,2                     ; Habilitamos el pin RB2 y esperamos 500ms
+0073   2???           00278                 CALL DELAY_250MS
+0074   2???           00279                 CALL DELAY_250MS
+                      00280                 
+0075   1586           00281                 BSF PORTB,3                     ; Habilitamos el pin RB3 y esperamos 500ms
+0076   2???           00282                 CALL DELAY_250MS
+0077   2???           00283                 CALL DELAY_250MS
+                      00284                 
+                      00285                 
+0078   1186           00286                 BCF PORTB,3                     ; Deshabilitamos el pin RB3 y esperamos 500ms
+0079   2???           00287                 CALL DELAY_250MS
+007A   2???           00288                 CALL DELAY_250MS
+                      00289                 
+007B   1106           00290                 BCF PORTB,2                     ; Deshabilitamos el pin RB2 y esperamos 500ms
+007C   2???           00291                 CALL DELAY_250MS
+007D   2???           00292                 CALL DELAY_250MS
+                      00293                 
+007E   1086           00294                 BCF PORTB,1                     ; Deshabilitamos el pin RB1 y esperamos 500ms
+007F   2???           00295                 CALL DELAY_250MS
+0080   2???           00296                 CALL DELAY_250MS
+                      00297                 
+0081   1006           00298                 BCF PORTB,0                     ; Deshabilitamos el pin RB0 y esperamos 500ms
+0082   2???           00299                 CALL DELAY_250MS
+0083   2???           00300                 CALL DELAY_250MS
+                      00301         
+0084   0008           00302                 RETURN  
+                      00303                 
+3F10                  00304                 END
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+BRGH                              00000002
+BUCLE_LEDS_500MS                  00000068
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONFIGURAR_PUERTOS                0000002A
+CONTADOR1                         00000020
+CONTADOR2                         00000021
+CONTADOR3                         00000022
+CONTADOR4                         00000023
+CREN                              00000004
+CSRC                              00000007
+DC                                00000001
+DELAY_1MS                         00000012
+DELAY_1S                          0000001E
+DELAY_250MS                       00000018
+DELAY_5S                          00000024
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+ENCENDER_LEDS_DE_A_UNO_500MS      00000053
+ENCENDER_TODOS_LOS_LEDS           00000031
+ENCENDER_TODOS_LOS_LEDS_1S        0000003C
+ENCENDER_TODOS_LOS_LEDS_1S_500MS  00000047
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+INICIO                            00000002
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RETARDO_1                         00000014
+RETARDO_2                         0000001A
+RETARDO_3                         00000020
+RETARDO_4                         00000026
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DATA_CP_OFF                      00003FFF
+MPASM  5.31                          MAIN.ASM   10-14-2022  22:57:39         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+__DEBUG                           1
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     6 suppressed
+
+
