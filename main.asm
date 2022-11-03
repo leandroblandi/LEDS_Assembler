@@ -28,6 +28,8 @@
 		CONTADOR2
 		CONTADOR3
 		CONTADOR4
+		CONTADOR5
+		CONTADOR6
 		
 		ENDC
 
@@ -44,30 +46,33 @@
 ; Subrutina principal
 ;********************
 
-INICIO	CALL ENCENDER_TODOS_LOS_LEDS
-		CALL ENCENDER_TODOS_LOS_LEDS
+INICIO	;CALL ENCENDER_TODOS_LOS_LEDS
+		;CALL ENCENDER_TODOS_LOS_LEDS
 
-		CALL DELAY_5S
+		;CALL DELAY_5S
 		
-		CALL ENCENDER_TODOS_LOS_LEDS_1S
-		CALL ENCENDER_TODOS_LOS_LEDS_1S
+		;CALL ENCENDER_TODOS_LOS_LEDS_1S
+		;CALL ENCENDER_TODOS_LOS_LEDS_1S
 		
-		CALL DELAY_5S
+		;CALL DELAY_5S
 		
-		CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
-		CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+		;CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
+		;CALL ENCENDER_TODOS_LOS_LEDS_1S_500MS
 		
-		CALL DELAY_5S
+		;CALL DELAY_5S
 		
-		CALL ENCENDER_LEDS_DE_A_UNO_500MS
-		CALL ENCENDER_LEDS_DE_A_UNO_500MS
+		;CALL ENCENDER_LEDS_DE_A_UNO_500MS
+		;CALL ENCENDER_LEDS_DE_A_UNO_500MS
 		
-		CALL DELAY_5S
+		;CALL DELAY_5S
+		
+		;CALL BUCLE_LEDS_500MS
+		;CALL BUCLE_LEDS_500MS
+		
+		;CALL DELAY_5S
 		
 		CALL BUCLE_LEDS_500MS
-		CALL BUCLE_LEDS_500MS
 		
-		CALL DELAY_5S
 				
 		GOTO INICIO
 
@@ -100,6 +105,14 @@ RETARDO_2	CALL DELAY_1MS		; Esperamos 1 milisegundo por cada
 			RETURN
 
 
+DELAY_500MS	MOVLW D'2'
+			MOVWF CONTADOR5
+
+RETARDO_500MS	CALL DELAY_250MS
+			DECFSZ CONTADOR5,F
+			GOTO RETARDO_500MS
+			RETURN
+
 ;****************************************************
 ; Subrutina para generar retardo de 1s
 ;****************************************************
@@ -130,9 +143,9 @@ CONFIGURAR_PUERTOS
 			BSF	STATUS,RP0
 			MOVLW B'11110000'		; Seteamos RB0, RB1, RB2 como salida				
 			MOVWF TRISB
+			
 			BCF STATUS,RP0
-			MOVLW B'00000000'		; Inicialmente, los LEDs estan inhabilitados
-			MOVWF PORTB
+			CLRF PORTB			; Deshabilitamos los pines
 			RETURN
 		
 
@@ -141,12 +154,7 @@ CONFIGURAR_PUERTOS
 ;****************************************************
 
 ENCENDER_TODOS_LOS_LEDS
-		
-		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
-		
-		MOVLW B'11110000'
-		MOVWF TRISB
-		
+			
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
 		MOVLW B'00001111'		; Habilitamos los pines
@@ -154,8 +162,7 @@ ENCENDER_TODOS_LOS_LEDS
 		
 		CALL DELAY_250MS		; Esperamos 1ms
 		
-		MOVLW B'00000000'		; Deshabilitamos todos los pines
-		MOVWF PORTB
+		CLRF PORTB			; Deshabilitamos los pines
 		
 		CALL DELAY_1MS		; Esperamos 1 ms (es para que se vea bien en Proteus)
 		
@@ -168,11 +175,6 @@ ENCENDER_TODOS_LOS_LEDS
 
 ENCENDER_TODOS_LOS_LEDS_1S
 
-		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
-		
-		MOVLW B'11110000'
-		MOVWF TRISB
-		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
 		MOVLW B'00001111'		; Habilitamos los pines
@@ -180,8 +182,7 @@ ENCENDER_TODOS_LOS_LEDS_1S
 	
 		CALL DELAY_1S		; Esperamos 1 segundo
 	
-		MOVLW B'00000000'		; Deshabilitamos todos los pines
-		MOVWF PORTB
+		CLRF PORTB 			; Deshabilitamos los pines
 	
 		CALL DELAY_1S		; Esperamos 1 segundo (es para que se vea bien en Proteus)
 		
@@ -193,11 +194,6 @@ ENCENDER_TODOS_LOS_LEDS_1S
 
 ENCENDER_TODOS_LOS_LEDS_1S_500MS 
 
-		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
-		
-		MOVLW B'11110000'
-		MOVWF TRISB
-		
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
 		MOVLW B'00001111'		; Habilitamos los pines
@@ -205,8 +201,7 @@ ENCENDER_TODOS_LOS_LEDS_1S_500MS
 	
 		CALL DELAY_1S		; Esperamos 1 segundo
 	
-		MOVLW B'00000000'		; Deshabilitamos todos los pines
-		MOVWF PORTB
+		CLRF PORTB 			; Deshabilitamos los pines
 	
 		CALL DELAY_250MS		; Esperamos 500ms
 		CALL DELAY_250MS
@@ -220,35 +215,22 @@ ENCENDER_TODOS_LOS_LEDS_1S_500MS
 		
 ENCENDER_LEDS_DE_A_UNO_500MS
 
-		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
+		BCF STATUS,RP0
 		
-		MOVLW B'11110000'
-		MOVWF TRISB
+		BSF PORTB,0			; Habilitamos el pin RB0
+		CALL DELAY_500MS		; Esperamos 500ms
 		
-		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
-		
-		BSF PORTB,0			; Habilitamos el pin RB0 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
-		
-		BSF PORTB,1			; Habilitamos el pin RB1 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
-		
-		BSF PORTB,2			; Habilitamos el pin RB2 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
-		
-		BSF PORTB,3			; Habilitamos el pin RB3 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
-		
-		MOVLW B'00000000'		; Deshabilitamos todos los pines
-		MOVWF PORTB
-		
-		CALL DELAY_250MS		; Esperamos 500ms para visualizarlo en Proteus
-		CALL DELAY_250MS
+		BSF PORTB,1			; Habilitamos el pin RB1
+		CALL DELAY_500MS		; Esperamos 500ms
 	
+		BSF PORTB,2			; Habilitamos el pin RB2
+		CALL DELAY_500MS		; Esperamos 500ms
+			
+		BSF PORTB,3			; Habilitamos el pin RB3
+		CALL DELAY_500MS		; Esperamos 500ms
+		
+		CLRF PORTB
+		
 		RETURN
 
 
@@ -258,47 +240,33 @@ ENCENDER_LEDS_DE_A_UNO_500MS
 ;************************************************************
 
 BUCLE_LEDS_500MS
-
-		BSF STATUS,RP0		; Cambiamos al banco 1 para manejar TRISB
 		
-		MOVLW B'11110000'
-		MOVWF TRISB
-		
+		; De ida
 		BCF STATUS,RP0		; Volvemos al banco 0 para manejar PORTB
 		
 		BSF PORTB,0			; Habilitamos el pin RB0 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BSF PORTB,1			; Habilitamos el pin RB1 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BSF PORTB,2			; Habilitamos el pin RB2 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BSF PORTB,3			; Habilitamos el pin RB3 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
-		
+		; De vuelta
 		BCF PORTB,3			; Deshabilitamos el pin RB3 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BCF PORTB,2			; Deshabilitamos el pin RB2 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BCF PORTB,1			; Deshabilitamos el pin RB1 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
+		CALL DELAY_500MS
 		
 		BCF PORTB,0			; Deshabilitamos el pin RB0 y esperamos 500ms
-		CALL DELAY_250MS
-		CALL DELAY_250MS
-	
-		RETURN	
+		CALL DELAY_500MS
 		
 		END
